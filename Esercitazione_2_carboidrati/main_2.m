@@ -1,0 +1,1 @@
+calcola_glucosio_giornaliero(2000, 3000, 10);
