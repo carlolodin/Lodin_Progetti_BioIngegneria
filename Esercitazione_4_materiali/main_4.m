@@ -61,11 +61,20 @@ for tipologia = 1:3
         deformazione = deformazione(valid_idx);
         
         % Regressione lineare per calcolare il modulo elastico
-        p = polyfit(deformazione(1:floor(length(deformazione)/4)), sforzo(1:floor(length(deformazione)/4)), 1);
+        x_fit = deformazione(1:floor(length(deformazione)/4));
+        y_fit = sforzo(1:floor(length(deformazione)/4));
+        p = polyfit(x_fit, y_fit, 1);
+        y_pred = polyval(p, x_fit);
+
+        % Calcolo R2 e MSE
+        SS_res = sum((y_fit - y_pred).^2);
+        SS_tot = sum((y_fit - mean(y_fit)).^2);
+        R2 = 1 - SS_res/SS_tot;
+        MSE = mean((y_fit - y_pred).^2);
+
         young_modulus(tipologia, campione) = p(1);
         % Definizione della retta: y = p(1)*(x - 0.2)
         retta = p(1) * (deformazione - 0.2);
-
         % Trova la differenza tra retta e sforzo
         diff = sforzo - retta;
         
@@ -102,8 +111,8 @@ for tipologia = 1:3
         plot(deformazione, sforzo);
         xlabel('Deformazione (%)');
         ylabel('Sforzo (kPa)');
-        title(['Campione ' num2str(campione) ' - Tipologia ' num2str(tipologia)]);
-
+        title({['Campione ' num2str(campione) ' - Tipologia ' num2str(tipologia)], ...
+       ['R^2 = ' num2str(R2, '%.3f') ',  MSE = ' num2str(MSE, '%.3f')]});
         %Calcola resilienza e tenacità
         resilienza(tipologia, campione) = trapz(deformazione(1:idx), sforzo(1:idx));
         tenacita(tipologia, campione) = trapz(deformazione, sforzo);
